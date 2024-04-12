@@ -1,0 +1,181 @@
+#!/usr/bin/python3
+
+import datetime, time
+import gspread
+from google.auth.transport.requests import AuthorizedSession
+from google.oauth2 import service_account
+from time import sleep
+import math
+
+# #ESP stuff
+import urllib.request
+import re
+#TASK1
+with urllib.request.urlopen('INSERT_IP_HERE') as response:
+    data = response.read()
+print(data)   
+print(type(data))
+print(10*'*')
+    
+    
+# #webUrl = urllib.request.urlopen('IP')
+#TASK 2 convert data from class "bytes" to class "string"
+#print(data)
+data=data.rstrip()
+# print(data)
+# print(type(data))
+
+# #TASK3  remove final quote 
+data1=str(data)
+data2 = re.findall(r'\d+',data1)
+
+# data1=data1.rstrip("'")
+print(data1)
+print(type(data1))
+print(data2)
+print(type(data2))
+
+#TASK4 function that converts string to a list
+# def Convert(string):
+#     li = list(string.split(","))
+#     return li
+# li = Convert(data1)
+# print(li)
+# print(type(li))
+
+
+
+#the angles will need to be variables in stacked pods that align with cardinal coordinates"
+#Task5 is a function that inputs three sensor signals and output x,y,r,angle in degrees, angle in radians and ave sensor value
+def config_vect(A_read,B_read,C_read,D_read,E_read,F_read):
+    '''this function inputs six sensor signals at the vertices of a triangle and returns values of the x axis,
+y axis, hypotenuse and the angle in radians and degrees and average '''
+    ang_A=math.radians(90)
+    ang_B=math.radians(330)
+    ang_C=math.radians(210)
+    ang_D=math.radians(30)
+    ang_E=math.radians(150)
+    ang_F=math.radians(270)
+    xo=A_read*math.cos(ang_A)+B_read*math.cos(ang_B)+C_read*math.cos(ang_C)
+    yo=A_read*math.sin(ang_A)+B_read*math.sin(ang_B)+C_read*math.sin(ang_C)
+    xc=D_read*math.cos(ang_D)+E_read*math.cos(ang_E)+F_read*math.cos(ang_F)
+    yc=D_read*math.sin(ang_D)+E_read*math.sin(ang_E)+F_read*math.sin(ang_F)
+    ro=math.sqrt(xo**2 +yo**2)
+    rc=math.sqrt(xc**2 +yc**2)
+    rado=math.acos(xo/ro)
+    radc=math.acos(xc/rc)
+    dego=math.degrees(rado)
+    degc=math.degrees(radc)
+    ave=(A_read + B_read + C_read + D_read + E_read + F_read)/6
+    #print(f"x is {x}, y is {y}, r is {r}, the degrees in radians is {rad}, the degrees in degrees is {deg}")
+    #return(f"x is{x}, y is{y} and r is{r}")
+    return(xo,yo,xc,yc,ro,rc,rado,radc,dego,degc,ave)
+
+# li = Convert(data1)
+# print(li)
+# print(type(li))
+#TASK 6 assign raw data from list to variables using list indexes
+#Pulling Data from SPOD 
+VOC_A = data2[0]
+VOC_B = data2[1]
+VOC_C = data2[2]
+VOC_D = data2[3]
+VOC_E = data2[4]
+VOC_F = data2[5]
+
+ #TASK7 - convert data to float and then input to configuration vector function
+#the data in the list are strings and we need to convert to float in order to do math 
+#print(type(VOC_A))
+n_VOC_A=float(VOC_A)
+n_VOC_B=float(VOC_B)
+n_VOC_C=float(VOC_C)
+n_VOC_D=float(VOC_D)
+n_VOC_E=float(VOC_E)
+n_VOC_F=float(VOC_F)
+ #VOC calc
+output=config_vect(n_VOC_A,n_VOC_B,n_VOC_C,n_VOC_D,n_VOC_E,n_VOC_F)
+output=list(output)
+VOC_xo=output[0]
+VOC_yo=output[1]
+VOC_xc=output[2]
+VOC_yc=output[3]
+VOC_ro=output[4]
+VOC_rc=output[5]
+VOC_rado=output[6]
+VOC_radc=output[7]
+VOC_dego=output[8]
+VOC_degc=output[9]
+VOC_ave=output[10]
+# print(f"VOC_x={VOC_x} of class{type(VOC_x)} and VOC_y={VOC_y} and VOC_r={VOC_r}")
+
+#  #temp calc
+# # n_T_A=float(T_A)
+# # n_T_B=float(T_B)
+# # n_T_C=float(T_C)
+# 
+# output=config_vect(n_T_A,n_T_B,n_T_C)
+# output=list(output)
+# T_x=output[0]
+# T_y=output[1]
+# T_r=output[2]
+# T_rad=output[3]
+# T_deg=output[4]
+# T_ave=output[5]
+# print(f"T_x={T_x} of class{type(T_x)} and T_y={T_y} and VOC_r={T_r}")
+# 
+#  #P calc
+# n_P_A=float(P_A)
+# n_P_B=float(P_B)
+# n_P_C=float(P_C)
+# 
+# output=config_vect(n_P_A,n_P_B,n_P_C)
+# output=list(output)
+# P_x=output[0]
+# P_y=output[1]
+# P_r=output[2]
+# P_rad=output[3]
+# P_deg=output[4]
+# P_ave=output[5]
+# print(f"P_x={P_x} of class{type(P_x)} and P_y={P_y} and P_r={P_r}")
+# 
+#  #Relative Humidity Calc
+# n_RH_A=float(RH_A)
+# n_RH_B=float(RH_B)
+# n_RH_C=float(RH_C)
+# 
+# output=config_vect(n_RH_A,n_RH_B,n_RH_C)
+# output=list(output)
+# RH_x=output[0]
+# RH_y=output[1]
+# RH_r=output[2]
+# RH_rad=output[3]
+# RH_deg=output[4]
+# RH_ave=output[5]
+# print(f"RH_x={RH_x} of class{type(RH_x)} and RH_y={RH_y} and RH_r={RH_r}")
+#  
+ #TASK8 upload data to Google Sheet through API
+#Access Google API
+googleAPI = 'INSERT_JSON_HERE'
+scope = ['https://www.googleapis.com/auth/drive']
+credentials = service_account.Credentials.from_service_account_file(googleAPI)
+scopedCreds = credentials.with_scopes(scope)
+gc = gspread.Client(auth=scopedCreds)
+gc.session = AuthorizedSession(scopedCreds)
+sheet = gc.open("Spod2")
+worksheet = sheet.worksheet("Combined_Spods")
+
+time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+values =[time,n_VOC_A, n_VOC_B, n_VOC_C, n_VOC_D,n_VOC_E,n_VOC_F, VOC_ave, VOC_xo, VOC_xc, VOC_yo, VOC_yc, VOC_ro, VOC_rc, VOC_dego, VOC_degc, VOC_rado, VOC_radc]
+#worksheet.insert_row(values, 2, value_input_option='str')
+#worksheet.insert_row(values, 2, value_input_option='RAW')
+worksheet.insert_row(values, 2, value_input_option='USER_ENTERED')
+print("Google Sheet Updated")
+# the following code makes backup file
+#TASK 9 dump data to local back file (csv)
+#note how we removed brackets from the list when we converted to strings
+# Spod3Backup = open("newbackup.csv","a")
+# #Spod3Backup.write("\n")
+# Spod3Backup.write(str(li)[1:-1])
+# Spod3Backup.write("\n")
+# Spod3Backup.close()
+
